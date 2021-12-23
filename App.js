@@ -1,8 +1,60 @@
-import { useEffect } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, SafeAreaView, StatusBar, FlatList, Modal } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as Animatable from 'react-native-animatable';
 
+
+
+const AniBtn = Animatable.createAnimatableComponent(TouchableOpacity);
 
 export default function App(){
+
+  const [cep, setCep] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+
+  //Variveis do CEP
+  const [logradouro, setlogradouro] = useState('');
+  const [complemento, setcomplemento] = useState('');
+  const [bairro, setbairro] = useState('');
+  const [localidade, setlocalidade] = useState('');
+  const [uf, setuf] = useState('');
+  const [ddd, setddd] = useState('');
+  const [codigo, setcodigo] = useState('');
+
+  async function ConsultarCEP(_cep){
+    let url = 'https://viacep.com.br/ws/' + _cep + '/json';
+    let req = await fetch(url);
+    let res = await req.json();
+   
+    setlogradouro(res.logradouro);
+    setcomplemento(res.complemento);
+    setbairro(res.bairro);
+    setlocalidade(res.logradouro);
+    setuf(res.uf);
+    setddd(res.ddd);
+    setcodigo(res.codigo);
+  }
+  
+  function Search(){    
+    if(cep.length < 8){
+      return;
+    }    
+
+    setModalOpen(true);
+    ConsultarCEP(cep);
+  }
+
+  function FecharModal(){
+    setlogradouro('');
+    setcomplemento('');
+    setbairro('');
+    setlocalidade('');
+    setuf('');
+    setddd('');
+    setcodigo('');
+
+    setModalOpen(false)
+  }
 
   return(
     <SafeAreaView style={style.container}>
@@ -11,18 +63,61 @@ export default function App(){
         <View style={style.containerText}>
           <Text style={style.title}>Meu CEP</Text>
         </View>
+
         <Text style={style.textCEP}>CEP:</Text>
+
         <TextInput 
         placeholder='Informe o CEP' 
         style={style.input}
         keyboardType='numeric'
         maxLength={8}
+        onChangeText={ (texto) => { setCep(texto) } }
         >
         </TextInput>
-        <TouchableOpacity style={style.button}>
+
+        <Modal visible={modalOpen} animationType='fade' transparent={false}>
+          <StatusBar backgroundColor="#1d2731" barStyle='ligth-content'/>
+          <SafeAreaView style={style.modal}>
+            <View>
+              <TouchableOpacity style={style.buttonBack} onPress={FecharModal}>
+                <Ionicons style={{marginLeft: 5, marginRight: 5}} name='md-arrow-back' size={40} color='#FFF'/>
+                <Text style={style.modalTitle}>Voltar</Text>                              
+              </TouchableOpacity>      
+
+              <Text style={style.fieldTitle}>CEP:</Text>          
+              <Text style={style.field}>{cep}</Text>  
+
+              <Text style={style.fieldTitle}>Logradouro:</Text>          
+              <Text style={style.field}>{logradouro}</Text> 
+
+              <Text style={style.fieldTitle}>Complemento:</Text>          
+              <Text style={style.field}>{complemento}</Text> 
+
+              <Text style={style.fieldTitle}>Bairro:</Text>          
+              <Text style={style.field}>{bairro}</Text> 
+
+              <Text style={style.fieldTitle}>Localidade:</Text>          
+              <Text style={style.field}>{localidade}</Text> 
+
+              <Text style={style.fieldTitle}>UF:</Text>          
+              <Text style={style.field}>{uf}</Text> 
+
+              <Text style={style.fieldTitle}>DDD:</Text>          
+              <Text style={style.field}>{ddd}</Text> 
+
+              <Text style={style.fieldTitle}>Código do Municipio:</Text>          
+              <Text style={style.field}>{codigo}</Text> 
+            </View>
+          </SafeAreaView>
+        </Modal>
+
+
+        <AniBtn style={style.button} onPress={Search} animation="bounceInUp" useNativeDriver duration={1500}>
           <Text style={style.buttonText}>Consultar</Text>
-        </TouchableOpacity>
-        <Text style={style.dev}>Developed by: @murilogarcia23</Text>
+        </AniBtn>
+
+
+        <Text  animation='BounceInUp' useNativeDriver duration={1500} style={style.dev} >Developed by: @murilogarcia23</Text>
     </SafeAreaView>
   );
 }
@@ -100,6 +195,36 @@ const style = StyleSheet.create({
     position: 'absolute',
     alignSelf: 'center',
     bottom: '5%'
+  },
+  modal:{
+    flex: 1,
+    backgroundColor: '#ffbb39'
+  },
+  buttonBack:{
+    marginTop: 20,
+    marginLeft: 5,
+    marginRight: 0,
+    flexDirection: 'row',
+
+    alignItems: 'center'
+  },
+  modalTitle:{
+    marginLeft: 10,
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 25
+  },
+  fieldTitle:{
+    color: '#1d2731',
+    fontSize: 18,
+    marginTop: 20,
+    marginLeft: 10,
+    fontWeight: 'bold'
+  },
+  field:{
+    color: '#1d2731',
+    fontSize: 18,
+    marginLeft: 10,
   }
 
 });
